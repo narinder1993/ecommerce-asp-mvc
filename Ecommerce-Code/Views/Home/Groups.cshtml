@@ -1,0 +1,868 @@
+﻿@using System.Net.NetworkInformation
+@{
+    NetworkInterface[] nics = NetworkInterface.GetAllNetworkInterfaces();
+    ViewData["macAdd"] = nics[0].GetPhysicalAddress().ToString();
+    ViewBag.Title = "Groups : Lovely Wannabuy";
+}
+
+
+
+<!DOCTYPE HTML><head>
+<title>Lovely Wanna Buy</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link href="~/Content/font-awesome.min.css" rel="stylesheet" />
+    <link href="~/Content/style.css" rel="stylesheet" />
+    <link href="~/Content/slider.css" rel="stylesheet" />
+    <script src="~/Scripts/move-top.js"></script>
+    <script src="~/Scripts/jquery-1.7.2.min.js"></script>
+    <script src="~/Scripts/easing.js"></script>
+    <script src="~/Scripts/startstop-slider.js"></script>
+    <script src="~/Scripts/ion.rangeSlider.min.js"></script>
+    <link href="~/Content/ion.rangeSlider.skinModern.css" rel="stylesheet" />
+    <link href="~/Content/ion.rangeSlider.css" rel="stylesheet" />
+    <link href="~/Content/normalize.css" rel="stylesheet" />    
+
+<script>
+    //script for cart slider
+$(document).ready(function(e) {
+$(".subcat").show();
+
+$(".fa-caret-right").click(function(e){
+$(".subcat").hide();
+});
+
+$(".fa-caret-right").dblclick(function(e) {
+$(".subcat").show();
+});
+
+$("#quick_view").hide();
+$("#cart").hide();
+$("#view").hide();
+
+$("#pro").hover(function(e){
+$("#quick_view").show();
+$("#cart").show();
+$("#view").show();
+});
+
+$("#pro").mouseleave(function(e){
+$("#quick_view").hide();
+$("#cart").hide();
+$("#view").hide();
+});
+
+});
+
+</script>
+    
+    <script type="text/javascript" src="http://code.jquery.com/jquery-1.4.2.js"></script>
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.4/jquery-ui.js"></script>
+
+
+<script type="text/javascript">
+    var totDue = 0;//total amount due for products in cart
+    var cartCount = 0;//number of products in cart
+    var cart = new Object();//object to be passed in api
+
+
+    var userName = "";
+    var totDue = 0;//amount due in cart
+    var cartCount = 0;//products in cart
+    var cart = new Object();
+    var mac;//mac address of the user
+    function addToCart(id)//adds element to cart 
+    {
+        var cartOb = new Object();
+        cartOb.id = id;
+        $.ajax({
+            url: '/api/productDescription',
+            dataType: 'json',
+            data: cartOb,
+            type: 'POST',
+            success: function (data) {
+                cartCount++;
+                totDue = totDue + parseInt(data[0].MRP);
+                //document.getElementById("itemCount").innerHTML = cartCount;
+                //document.getElementById("totDue").innerHTML = totDue + ".00";
+                cartUpdate(id);
+                cartMaintain(cartCount, totDue);
+
+            },
+            error: function (msg) {
+                alert(msg.responseText);
+            }
+        })
+
+
+    }
+
+    function cartUpdate(id)//update cart in database
+    {
+        var cartOb = new Object;
+        cartOb.username = document.getElementById("username").innerHTML;
+        cartOb.productId = id;
+        cartOb.mac = mac;
+        cartOb.cartProds = cartCount;
+        cartOb.amtDue = totDue;
+
+        $.ajax({
+            url: '/api/cartMaintainApi',
+            dataType: 'json',
+            data: cartOb,
+            type: 'POST',
+            success: function (data) {
+                sideCart(document.getElementById("username").innerHTML);
+            }
+
+        })
+
+    }
+    function cartMaintain(cartCount, totDue)//update cart in Home controller
+    {
+        cart.cartProds = cartCount;
+        cart.amtDue = totDue;
+        $.ajax({
+            url: '/Home/cartMaintain',
+            data: cart,
+            dataType: 'JSON',
+            type: 'POST'
+        })
+        sideCart(document.getElementById("username").innerHTML);
+    }
+
+    var path;
+    var n = 0;
+    var x = 0;
+    var page = 0;
+    var textOb = new Object();
+    var totProds = 0;
+    var count = 0;
+    textOb.txtSearch = '~';
+
+    textOb.pageSize = 12;
+
+    function getcount() //first function to be called. Inserts the MAC address in database and fetch the previous session's products in the cart
+    {
+        getUsername();
+        var Cart = new Object;
+        mac = document.getElementById("mac").value;
+        Cart.mac = mac;
+        $.ajax({
+            url: 'Home/macCart',
+            data: Cart,
+            dataType: 'JSON',
+            type: 'POST'
+
+        })
+        cartCount = parseInt(document.getElementById("cartProds").value);
+        totDue = parseInt(document.getElementById("amtDue").value);
+
+        document.getElementById("itemCount").innerHTML = cartCount;
+        document.getElementById("totDue").innerHTML = totDue + ".00";
+
+        //to fetch the number of rows to be returned
+        $.ajax({
+            url: 'http://localhost:50171/api/rowCount',
+            data: textOb,
+            dataType: 'JSON',
+            type: 'PUT',
+            success: function (data) {
+                totProds = data;
+
+            },
+            error: function (msg) {
+                alert(totProds + ' ' + msg.responseText);
+            }
+        });
+        picload1();
+
+    }
+    function prodDescription(id) //calls the method in Home to go to product description page 
+    {
+        var arg = new Object();
+        arg.id = id;
+        $.ajax({
+            url: 'http://localhost:50171/Home/prodClick',
+            data: arg,
+            dataType: 'json',
+            type: 'POST',
+            success: function (msg) { window.location.href = '/Home/productDescription'; },
+            error: function (msg) { window.location.href = '/Home/productDescription'; }
+        })
+    };
+    function picload1() {
+
+        textOb.count = count;
+        $.ajax({
+            url: '/api/groups',
+            data: textOb,
+            dataType: 'json',
+            type: 'PUT',
+            success: function (data) {
+                path = data;
+                newinput = "";
+                var a = 0;
+                if (x == 0) {
+                    for (var i = 0; i < 12 ; i++) {
+
+                        if (path[i] != null) {
+
+                            if (path[i].id != "-1") {
+                                if (i % 4 == 0)
+                                { a = -89; }
+                                else { a = 11.750; }
+                                newInput = newinput + "<div class='grid_1_of_4 images_1_of_4' style='margin-left:" + a + "px'><a onclick= groupClick('" + path[i].id + "')><img src='" + path[i].path + "'  /></a><h2 style='height:30px'>" + path[i].name + "</h2></div>";
+                                document.getElementById("pic").innerHTML += newInput;
+                                count++;
+                            }
+                            else {
+                                alert(path[i].path);
+                                break;
+                            }
+                        }
+                        else {
+                            x = 1;
+                            //document.getElementById("loader").innerHTML = "Thats all!";
+                            break;
+                        }
+
+                    }
+                    n = n + 12;
+                    // document.getElementById("pic").innerHTML += "<div id='loader" + page + "' <div class='grid_1_of_4_pro images_1_of_4' style='width:95%; height:auto; margin-left:-1%'><p class='content_bottom' style='padding: 15px 20px; text-align: center;'><img style='width:4%' src='/Images/products/spiffygif_32x32.gif' /></p><br/><br/><br></div></div>";
+                }
+            },
+            error: function (msg) {
+                alert(msg.responseText);
+            }
+        });
+
+
+    };
+    //to be called when user clicks on the groups. Opens the pages showing elements realted to that group
+    function groupClick(a) {
+        var arg = new Object();
+        arg.id = a;
+
+        $.ajax({
+
+            url: 'http://localhost:50171/Home/userGroupClick1',
+            data: arg,
+            dataType: 'json',
+            type: 'POST',
+            success: function (msg) { window.location.href = '/Home/groupClick'; },
+            error: function (msg) { window.location.href = '/Home/groupClick'; }
+        });
+    }
+    //implement lazy loading. To fetch new rows after window reaches end of the page
+    $(window).scroll(function () {
+        if ($(window).scrollTop() + $(window).height() == $(document).height()) {
+            setTimeout("picload1()", 2000);
+        }
+    });
+    function search()//to search the products when search textbox is used
+    {
+        var searchText = new Object();
+        searchText.txtSearch = document.getElementById("txtSearch").value;
+        $.ajax({
+            data: searchText,
+            dataType: 'json',
+            url: '/Home/search1',
+
+            type: 'POST',
+            success: function (msg) {
+                window.location.href = '/Home/searchPage';
+            },
+
+            error: function (msg) {
+
+                window.location.href = '/Home/searchPage';
+            }
+        });
+    }
+    var totalPrice = 0;
+    //to maintain the sideCart
+    function sideCart(username1) {
+
+
+        var CartSideOb = new Object();
+        CartSideOb.mac = mac;
+        CartSideOb.username = username1.toString();
+        var cartDetails = "";
+        var i;
+        $.ajax({
+            url: '/api/sideCart',
+            dataType: 'json',
+            type: 'POST',
+            data: CartSideOb,
+            success: function (data) {
+                cartCount = 0;
+                totalPrice = 0;
+                for (i = 0; i < data.length; i++) {
+                    cartCount = cartCount + parseInt(data[i].quantity);
+                    totalPrice += parseInt(data[i].price) * parseInt(data[i].quantity);
+
+                    cartDetails += "<li><div><img style='  width: 70px;' src='" + data[i].path + "'></div><div style='  margin-top: -66px; margin-left: 74px;'>" + data[i].name + "<span class=''><br><div style='  margin-top: 4px;'><img src='/Images/minus.png' style='height:12px' onclick=decQty(" + data[i].id + ") />  " + data[i].quantity + "  <img src='/Images/plus.png' onclick=incQty(" + data[i].id + ") style='height:12px'/></div><div class='cd-price'>₹ " + data[i].price + "</span></div></div><a href='#0' class='cd-item-remove cd-img-replace' onclick='del(" + data[i].id + ")'><img style='width:13px' src='/Images/Awicons-Vista-Artistic-Delete.ico'></a></li>"
+                }
+                document.getElementById("sideCart").innerHTML = cartDetails;
+                document.getElementById("total").innerHTML = "₹ " + totalPrice + ".00";
+                document.getElementById("itemCount").innerHTML = cartCount;
+                document.getElementById("totDue").innerHTML = totalPrice + ".00";
+
+
+            },
+            error: function (msg) {
+                alert(msg.responseText);
+            }
+        })
+
+    }
+    function del(id) {
+
+        var cartOb = new Object();
+        cartOb.mac = document.getElementById("mac").value;
+        cartOb.username = document.getElementById("username").innerHTML;
+
+        cartOb.productId = id;
+        $.ajax({
+            url: '/api/deleteProd',
+            data: cartOb,
+            dataType: 'JSON',
+            type: 'POST',
+            success: function (data) {
+                cartMaintain();
+                onLoad(document.getElementById("username").innerHTML);
+            },
+            error: function (msg) {
+                alert(msg.responseText);
+            }
+        });
+    }
+    function decQty(id) {
+        var quantity = 1;
+        var cartOb = new Object();
+        cartOb.mac = document.getElementById("mac").value;
+
+        cartOb.productId = id;
+        $.ajax({
+            url: '/api/cartQuantity',
+            data: cartOb,
+            dataType: 'JSON',
+            type: 'POST',
+            success: function (data) {
+
+                quantity = parseInt(data);
+                var a = quantity;
+                dec(a, id);
+            },
+            error: function (msg) {
+                alert(msg.responseText);
+            }
+
+
+        })
+
+
+    }
+    function dec(quantity, id) {
+        var cartOb = new Object();
+        cartOb.mac = document.getElementById("mac").value;
+        cartOb.productId = id;
+
+        if (quantity >= 2) {
+            cartOb.username = document.getElementById("username").innerHTML;
+
+            cartOb.prodQty = quantity;
+            $.ajax({
+                url: '/api/decQty',
+                data: cartOb,
+                dataType: 'JSON',
+                type: 'POST',
+                success: function (data) {
+
+                    sideCart(document.getElementById("username").innerHTML);
+                },
+                error: function (msg) {
+                    alert(msg.responseText);
+                }
+            })
+        }
+    }
+    function incQty(id) {
+        var cartOb = new Object();
+        cartOb.mac = document.getElementById("mac").value;
+        cartOb.productId = id;
+        cartOb.username = document.getElementById("username").innerHTML;
+
+        $.ajax({
+            url: '/api/incQty',
+            data: cartOb,
+            dataType: 'JSON',
+            type: 'POST',
+            success: function (data) {
+
+                sideCart(document.getElementById("username").innerHTML);
+            },
+            error: function (msg) {
+                alert(msg.responseText);
+            }
+        })
+    }
+
+
+    function signUp()//name email pass
+    {
+
+        var username = document.getElementById("name").value;
+        var email = document.getElementById("email").value;
+        var pass = document.getElementById("pass").value;
+        var mac = document.getElementById("mac").value;
+        var userOb = new Object();
+        userOb.username = username;
+        userOb.email_phone = email;
+        userOb.password = pass;
+        userOb.mac_address = mac;
+        $.ajax({
+            url: '/api/userLogin',
+            data: userOb,
+            dataType: 'JSON',
+            type: 'POST',
+            success: function (data) {
+                if (data == 1) {
+                    alert("Registered Successfully. Welcome to Lovely Wannabuy!!")
+                }
+                else {
+                    alert("Please check details again")
+                }
+            },
+            error: function (msg)
+            { alert(msg.responseText) }
+        })
+    }
+    function signIn() {
+
+        var username = document.getElementById("nameLogin").value;
+        var mac_address = document.getElementById("mac").value;
+        var password = document.getElementById("passLogin").value;
+        var userOb = new Object();
+        userOb.username = username;
+        userOb.password = password;
+        userOb.mac_address = mac_address;
+        $.ajax({
+            url: '/api/UserSignIn',
+            data: userOb,
+            dataType: 'JSON',
+            type: 'POST',
+            success: function (data) {
+                if (data > 0) {
+                    getUsername();
+                    alert("Successful Login. Welcome to Lovely Wannabuy");
+                }
+                else {
+                    alert("Invalid Username/Password")
+                }
+            },
+            error: function (msg)
+            { alert(msg.responseText) }
+        })
+    }
+    function getUsername() {
+        var userOb = new Object();
+        userOb.mac_address = document.getElementById("mac").value;
+        var username1;
+        $.ajax({
+            url: '/api/getUsername',
+            dataType: 'JSON',
+            data: userOb,
+            type: 'POST',
+            success: function (data) {
+
+                if (data.length == 0) {
+                    document.getElementById("username").innerHTML = "Guest User";
+                    username1 = "Guest User";
+                    sideCart(username1);
+                }
+                else {
+                    document.getElementById("username").innerHTML = data;
+                    username1 = data;
+                    sideCart(username1);
+
+                }
+            }
+        })
+    }
+
+    function logOut() {
+        var userOb = new Object();
+        userOb.mac_address = document.getElementById("mac").value;
+        userOb.username = document.getElementById("username").innerHTML;
+        $.ajax({
+            url: '/api/signOut',
+            data: userOb,
+            dataType: 'JSON',
+            type: 'POST',
+            success: function (data) {
+                alert("Log Out Successful!!")
+                window.location.href = '/Home';
+            },
+            error: function (msg) {
+                alert(msg.responseText);
+            }
+        });
+    }
+</script>
+
+
+
+
+
+
+</head>
+
+<style>
+/*<!--li{
+padding:10px 10px 10px 10px;
+}-->*/
+</style>
+<body onload="getcount();">
+    @Html.Hidden("cartProds",ViewData["cartProds"])
+    @Html.Hidden("mac", ViewData["macAdd"])
+    
+    @Html.Hidden("amtDue", ViewData["amtDue"])
+  
+   <div class="wrap">
+	<div class="header">
+		<div class="headertop_desc">
+			<div class="call">
+				 <p><span>Need help?</span> call us <span class="number">1-22-3456789</span></p>
+			</div>
+						<div class="account_desc">
+                <div style="  margin-left: -179px;
+  margin-top: 0px;
+  position: absolute;
+  font-size: small; text-align: right;
+  "><p>Welcome, <span id="username"></span> !</p></div>
+				<ul>
+                    
+					<li><a href="#modal" id="modal_trigger" class="abc" style="padding-bottom:20px">Register/Login</a></li>
+					</ul>
+                <div id="modal" class="popupContainer" style="display:none; width:500px;">
+		<header class="popupHeader">
+			<span class="header_title">Login</span>
+			<span class="modal_close">X</span>		</header>
+		
+		<section class="popupBody">
+			<!-- Social Login -->
+			<div class="social_login">
+				
+
+				<div class="centeredText">
+					<span>Or use your Email address</span>				</div>
+
+				<div class="action_btns">
+					<div class="one_half"><a href="#" id="login_form" class="btn">Login</a></div>
+					<div class="one_half last"><a href="#" id="register_form" class="btn">Sign up</a></div>
+				</div>
+			</div>
+
+			<!-- Username & Password Login form -->
+			<div class="user_login">
+				<form>
+					<label>Email / Username</label>
+					<input type="text" id="nameLogin"/>
+					<br />
+
+					<label>Password</label>
+					<input type="password" id="passLogin"/>
+					<br />
+
+					<div class="checkbox">
+						<input id="remember" type="checkbox" />
+						<label for="remember">Remember me on this computer</label>
+					</div>
+
+					<div class="action_btns">
+						<div class="one_half"><a href="#" class="btn back_btn">&lt;&lt; Back</a></div>
+						<div class="one_half last"><a href="#" onclick="signIn()" class="btn btn_red">Login</a></div>
+					</div>
+				</form>
+
+				<a href="#" class="forgot_password">Forgot password?</a>			</div>
+
+			<!-- Register Form -->
+			<div class="user_register">
+      
+				<form>
+					<label>Name</label>
+					<input type="text" id="name" placeholder="Enter your name"/>
+                    <br>
+					
+                  
+					<label>Email Address/Phone Number</label>
+					<input type="email" id="email" placeholder="Enter email or mobile no." />
+					<br>
+
+                    <label>Enter a password</label>
+					<input type="password" id="pass" placeholder="Enter password" />
+					<br>
+
+					<div class="action_btns">
+						<div class="one_half"><a href="#" class="btn back_btn">&lt;&lt; Back</a></div>
+						<div class="one_half last"><a href="#" onclick="signUp()" class="btn btn_red">Register</a></div>
+					</div>
+				</form>
+			</div>
+		</section>
+	</div>
+
+
+<script type="text/javascript">
+    $("#modal_trigger").leanModal({ top: 120, overlay: 0.6, closeButton: ".modal_close" });
+
+    $(function () {
+        // Calling Login Form
+        $("#login_form").click(function () {
+            $(".social_login").hide();
+            $(".user_login").show();
+            return false;
+        });
+
+        // Calling Register Form
+        $("#register_form").click(function () {
+            $(".social_login").hide();
+            $(".user_register").show();
+            $(".header_title").text('Register');
+            return false;
+        });
+
+        // Going back to Social Forms
+        $(".back_btn").click(function () {
+            $(".user_login").hide();
+            $(".user_register").hide();
+            $(".social_login").show();
+            $(".header_title").text('Login');
+            return false;
+        });
+
+    })
+</script>
+
+                 <ul style="margin-left:-86px">
+					<li style="  margin-left: -139px;"><a href="#">Delivery</a></li>
+					<li><a style="  margin-left: -20px;"> @Html.ActionLink("Checkout", "checkout", "Home")</a></li>
+					<li><a>@Html.ActionLink("My Account", "profile", "Home")</a></li>
+                    <li><a onclick="logOut()">Logout</a></li>
+				</ul>
+			</div>
+			<div class="clear"></div>
+		</div>
+		<div class="header_top">
+			<div class="logo">
+				<img src="~/Images/LandingPage/logo.png" alt="" />
+			</div>
+			  <div class="cart">
+			  	   <p> <span></span>
+                         <div id="cd-cart-trigger" style="margin-top:10px;">
+             
+             
+			 
+         <img src="~/Images/Cart.png" style="margin-top: -92px;
+  margin-left: 133px;
+  margin-right: -10px;
+  width: 20%;
+  position: relative;
+  right: -70px;"/>
+                 <script type="text/javascript">
+                     function DropDown(el) {
+                         this.dd = el;
+                         this.initEvents();
+                     }
+                     DropDown.prototype = {
+                         initEvents: function () {
+                             var obj = this;
+
+                             obj.dd.on('click', function (event) {
+                                 $(this).toggleClass('active');
+                                 event.stopPropagation();
+                             });
+                         }
+                     }
+
+                     $(function () {
+
+                         var dd = new DropDown($('#dd'));
+
+                         $(document).click(function () {
+                             // all dropdowns
+                             $('.wrapper-dropdown-2').removeClass('active');
+                         });
+
+                     });
+
+		</script>
+	 <div class="clear"></div>
+
+                            
+                </div>
+                         <div id="dd" class="wrapper-dropdown-2" style="  margin-left: 126px;"> 
+                             <p id="itemCount"> 0 </p> item(s) -  ₹<p id="totDue">0.00</p>
+			  	   	<ul class="dropdown">
+							<li>you have no items in your Shopping cart</li>
+					</ul></div></p>
+			  </div>
+			 
+	 <div class="clear"></div>
+  </div>
+	<div class="header_bottom">
+	     	<div class="menu">
+	     		<ul>
+			    	<li class="active">@Html.ActionLink("Home", "index", "Home")</li>
+			    	<li>@Html.ActionLink("About Us", "aboutUs", "Home")</li>
+			    	<li><a href="#">Delivery</a></li>
+			    	<li><a href="#">News</a></li>
+			    	<li >@Html.ActionLink("Contact Us", "contactUs", "Home")</li>
+			    	<div class="clear"></div>
+     			</ul>
+	     	</div>
+	     	<div class="search_box">
+	     		<form>
+	     			<input type="text" autocomplete="off" id="txtSearch" value="Search" onfocus="this.value = '';" onblur="if (this.value == '') {this.value = 'Search';}"><input type="submit" onclick="search();" value="">
+	     		</form>
+	     	</div>
+	     	<div class="clear"></div>
+	     </div>	     
+        <center>
+        <img style="width:70%" src="~/Images/products/product-image-all-packs-new.jpg" /></center>
+    	<div class="header_slide">
+							
+	  	     </div>
+             <!-- slider begin -->
+					 <div class="header_bottom_right"style="margin-left:13%" >
+                    
+                       <section class="section" id="pic" style="margin-left:8%">
+                         
+                     </section>
+                          
+                     </div>			
+		             <div class="clear"></div>
+		            <p id="loader"  style="margin-left:0%; text-align:center; color:white; padding-top:3%"><img src="~/Images/products/spiffygif_32x32.gif" style="width:30px"/><br /></p>
+      </div>
+      <div class="footer">
+   	  <div class="wrap">	
+	     <div class="section group">
+				<div class="col_1_of_4 span_1_of_4">
+						<h4>Information</h4>
+						<ul>
+						<li><a href="#">About Us</a></li>
+						<li><a href="#">Customer Service</a></li>
+						<li><a href="#">Advanced Search</a></li>
+						<li><a href="#">Orders and Returns</a></li>
+						<li><a href="#">Contact Us</a></li>
+						</ul>
+					</div>
+				<div class="col_1_of_4 span_1_of_4">
+					<h4>Why buy from us</h4>
+						<ul>
+						<li><a href="#">About Us</a></li>
+						<li><a href="#">Customer Service</a></li>
+						<li><a href="#">Privacy Policy</a></li>
+						<li><a href="#">Site Map</a></li>
+						<li><a href="#">Search Terms</a></li>
+						</ul>
+				</div>
+				<div class="col_1_of_4 span_1_of_4">
+					<h4>My account</h4>
+						<ul>
+							<li><a href="#">Sign In</a></li>
+							<li><a href="index.html">View Cart</a></li>
+							<li><a href="#">My Wishlist</a></li>
+							<li><a href="#">Track My Order</a></li>
+							<li><a href="#">Help</a></li>
+						</ul>
+				</div>
+				<div class="col_1_of_4 span_1_of_4">
+					<h4>Contact</h4>
+						<ul>
+							<li><span>+91-123-456789</span></li>
+							<li><span>+00-123-000000</span></li>
+						</ul>
+						<div class="social-icons">
+							<h4>Follow Us</h4>
+					   		  <ul>
+							      <li><a href="#" target="_blank"><img src="~/Images/LandingPage/facebook.png" alt="" /></a></li>
+							      <li><a href="#" target="_blank"><img src="~/Images/LandingPage/twitter.png" alt="" /></a></li>
+							      <li><a href="#" target="_blank"><img src="~/Images/LandingPage/skype.png" alt="" /> </a></li>
+							      <li><a href="#" target="_blank"> <img src="~/Images/LandingPage/linkedin.png" alt="" /></a></li>
+							      <div class="clear"></div>
+						     </ul>
+   	 					</div>
+				</div>
+			</div>			
+        </div>
+        <div class="copy_right">
+				<p>Lovely Wanna Buy © All rights Reseverd </p>
+		   </div>
+    </div>
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $().UItoTop({ easingType: 'easeOutQuart' });
+
+        });
+	</script>
+    <a href="#" id="toTop"><span id="toTopHover"> </span></a>
+ 
+    
+    
+    <div id="cd-shadow-layer"></div>
+
+	<div id="cd-cart">
+		<h2>Cart</h2>
+		<ul class="cd-cart-items" id="sideCart">
+			
+		</ul> <!-- cd-cart-items -->
+
+		<div class="cd-cart-total">
+			<p>Total <span id="total"></span></p>
+		</div> <!-- cd-cart-total -->
+
+		@Html.ActionLink("Checkout", "checkout", "Home", null, new { @class="checkout-btn"})
+		
+		<p class="cd-go-to-cart"><a href="#0">Go to cart page</a></p>
+	</div> <!-- cd-cart -->
+    
+	<!-- end:copyright -->
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="jquerys.js"></script>
+    <script src="bootstrap-3.3.2-dist/bootstrap-3.3.2-dist/js/bootstrap.js"></script>
+	<script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=false&amp;language=en"></script>
+    <script src="gmap3.js"></script>
+    <script src="script.js"></script>
+<script></script> <!-- Gem jQuery -->
+<script>
+    (function (i, s, o, g, r, a, m) {
+        i['GoogleAnalyticsObject'] = r; i[r] = i[r] || function () {
+            (i[r].q = i[r].q || []).push(arguments)
+        }, i[r].l = 1 * new Date(); a = s.createElement(o),
+        m = s.getElementsByTagName(o)[0]; a.async = 1; a.src = g; m.parentNode.insertBefore(a, m)
+    })(window, document, 'script', '//www.google-analytics.com/analytics.js', 'ga');
+
+    ga('create', 'UA-48014931-1', 'codyhouse.co');
+    ga('send', 'pageview');
+
+    jQuery(document).ready(function ($) {
+        $('.close-carbon-adv').on('click', function () {
+            $('#carbonads-container').hide();
+        });
+    });
+</script>
+
+    
+    
+</body>
+</html>
+
+           
+      

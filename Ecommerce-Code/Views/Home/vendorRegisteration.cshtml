@@ -1,0 +1,113 @@
+﻿@{
+    ViewBag.Title = "Vendor Registration:Lovely Wannabuy";
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+  <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+
+    <script type="text/javascript" src="js/jquery-1.10.2.min.js"></script>
+    <script type="text/javascript">
+$(document).ready(function(){
+    $('[data-toggle="tooltip"]').tooltip({
+        placement : 'left'
+    });
+});
+</script>
+    <script>
+        function register()
+        {
+            var vendor = new Object();
+            vendor.name = document.getElementById("name").value;
+            vendor.email = document.getElementById("email").value;
+            vendor.password = document.getElementById("password").value;
+            vendor.contact = document.getElementById("contact").value;
+            vendor.address = document.getElementById("address").value;
+            vendor.state = document.getElementById("state").value;
+            vendor.city = document.getElementById("city").value;
+            vendor.pincode = document.getElementById("pincode").value;
+            $.ajax({
+                url: '/api/vendorReg',
+                data: vendor,
+                dataType:'JSON',
+                type: 'POST',
+                success: function (data)
+                {
+                    alert("Registration Successful!! Please Login.");
+                    window.location.href = '/Home/vendor';
+                }
+            })
+        }
+
+    </script>
+</head>
+<body>
+<nav class="navbar navbar-default" role="navigation">
+    <div class="navbar-header">
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+        </button>
+        
+    </div>
+    
+    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+       <div class="row">
+       <div class="col-md-1"></div>
+             
+       <div class="col-md-10">
+                <div class="col-md-4">
+               				<img src="~/Images/LandingPage/logo.png" alt="" />
+
+                </div>
+                <div class="col-md-4"></div>
+                <div class="col-md-4" style="margin-top:20px;">
+                    
+               </div>
+       <div class="col-md-1"></div>
+       </div>
+       </div>
+<div class="container">
+<br>
+<div class="col-md-12" style="background-color:#b81d22;"><h4 style="text-align:center; color:#FFF; font-weight:600;">SELL WITH US</h4></div>
+<br><br>
+<h2>Verification of Details</h2>
+<div class="col-md-2"></div>
+<div class="col-md-8">
+<form role="form" >
+    <div class="form-group" style="margin-top:15px;">
+    <label for="name">Seller Name:</label>
+      <input type="text" class="form-control" id="name" placeholder="Enter your Name" data-toggle="tooltip" data-original-title="This will be visible with the product"><br>
+      <label for="email">Email:</label>
+      <input type="text" class="form-control" id="email" placeholder="Enter your Email Address" data-toggle="tooltip" data-original-title="Email will be your username, Use it to login"><br>
+      <label for="name">Password:</label>
+      <input type="password" class="form-control" id="password" placeholder="Enter password" data-toggle="tooltip" data-original-title="Your password must be 8 characters long"><br>
+      <label for="name">Contact:</label>
+      <input type="text" class="form-control" id="contact" placeholder="Enter your Contact Number" data-toggle="tooltip" data-original-title="Provide us with your working phone number" ><br>
+      <label for="name">Address:</label>
+      <input type="text" class="form-control" id="address" placeholder="Enter your Address" data-toggle="tooltip" data-original-title="This Address will be your permanent address"><br>
+      <label for="name">State:</label>
+      <input type="text" class="form-control" id="state" placeholder="Enter your State" data-toggle="tooltip" data-original-title="Please Enter this carefully"><br>
+      <label for="name">City:</label>
+      <input type="text" class="form-control" id="city" placeholder="Enter your City" data-toggle="tooltip" data-original-title="This is just for our reference"><br>
+      <label for="name">Pincode:</label>
+      <input type="text" class="form-control" id="pincode" placeholder="Enter your Pincode" data-toggle="tooltip" data-original-title="This is for our use"><br>
+      <button type="button" class="btn btn-primary btn-lg btn-block" onclick="register()" style="background-color:#b81d22;">CONTINUE </button>
+      </div>
+      </form>
+      
+
+</div>
+<div class="col-md-2"></div>
+</div>
+</body>
+</html>
+

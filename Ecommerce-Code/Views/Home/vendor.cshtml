@@ -1,0 +1,118 @@
+﻿@{
+    ViewBag.Title = "Vendors: Lovely Wannabuy";
+}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+  <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+
+    <script type="text/javascript" src="js/jquery-1.10.2.min.js"></script>
+
+<style>
+.banner1
+{
+	background-color:#b81D22;
+	height:600px;
+	width:100%;
+	margin:0;
+	position:fixed;
+	margin-left:-17px;
+	
+}
+
+</style>
+<script>
+    function vendorLogin()
+    {
+        var vendor = new Object();
+        vendor.email = document.getElementById("email").value;
+        vendor.password = document.getElementById("pwd").value;
+        $.ajax({
+            url: '/api/vendorLogin',
+            data: vendor,
+            dataType: 'JSON',
+            type: 'POST',
+            success: function (data)
+            {
+                if (data == 0)
+                {
+                    alert("Incorrect Login Details.");
+                }
+                else if (data > 0)
+                {
+                    alert("Login Successful!!");
+                    $.ajax({
+                        url: '/Home/setVendor',
+                        data: vendor,
+                        dataType: 'JSON',
+                        type: 'POST'
+                    });
+                    window.location.href = '/Home/vendorPage';
+                }
+            },
+            error: function (msg)
+            {
+                alert(msg.responseText);
+            }
+
+        })
+    }
+
+</script>
+</head>
+<body>
+<nav class="navbar navbar-default" role="navigation">
+    <div class="navbar-header">
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+        </button>
+        
+    </div>
+    
+    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+       <div class="row">
+       <div class="col-md-1"></div>
+             
+                <div class="col-md-5">
+                <img src="~/Images/LandingPage/logo.png" alt="" />
+                </div>
+                <div class="col-md-5" style="margin-top:20px;">
+                <form class="form-inline" role="form">
+    <div class="form-group">
+            <input type="email" class="form-control" id="email" placeholder="Enter email">
+    </div>
+    <div class="form-group">
+            <input type="password" class="form-control" id="pwd" placeholder="Enter password">
+    </div>
+    <button type="submit" class="btn btn-default" onclick="vendorLogin()" style="background-color:#b81D22; color:#FFF;">Login</button>
+    
+  </form>
+				</div>               
+      
+       <div class="col-md-1"></div>
+       </div>
+<div class="banner1">
+<div class="container">
+<br>
+<div class="col-md-12" style="background-color:#b81d22;"><h4 style="text-align:center; color:#FFF; font-weight:600;">SELL WITH US</h4></div>
+<div class="col-md-12" style="background-color:#b81D22;">
+<div class="jumbotron" style="text-align:center;">
+  <h1>Grow your Business with the leader in Indian Markets</h1>
+  <h2>Growth, Ease of Selling and Excellent Service</h2>
+  <p>The best market place in the country<br> Register your Business <br> Grab your chance</p>
+  <p class="btn btn-danger" style="background-color:#b81D22; text-decoration:none"  role="button">@Html.ActionLink("Start Selling","vendorRegisteration","Home")</p>
+</div>
+</div>
+</div>
+</div>
+</body>
+</html>
+

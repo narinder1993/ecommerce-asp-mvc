@@ -1,0 +1,152 @@
+﻿@using System.Net.NetworkInformation
+@{
+    NetworkInterface[] nics = NetworkInterface.GetAllNetworkInterfaces();
+    ViewData["macAdd"] = nics[0].GetPhysicalAddress().ToString();
+   
+    ViewBag.Title = "Sign In: Lovely Wannabuy";
+}
+
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+  <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+
+   
+</head>
+    <script>
+
+        function search()//implement the search
+        {
+            var searchText = new Object();
+            searchText.txtSearch = document.getElementById("txtSearch").value;
+            $.ajax({
+                data: searchText,
+                dataType: 'json',
+                url: '/Home/search1',
+
+                type: 'POST',
+                success: function (msg) {
+                    window.location.href = '/Home/searchPage';
+                },
+
+                error: function (msg) {
+
+                    window.location.href = '/Home/searchPage';
+                }
+            });
+        }
+
+        function signIn() {
+
+            var username = document.getElementById("nameLogin").value;
+            var mac_address = document.getElementById("mac").value;
+            var password = document.getElementById("passLogin").value;
+            var userOb = new Object();
+            userOb.username = username;
+            userOb.password = password;
+            userOb.mac_address = mac_address;
+            $.ajax({
+                url: '/api/UserSignIn',
+                data: userOb,
+                dataType: 'JSON',
+                type: 'POST',
+                success: function (data) {
+                   
+                    if (data > 0) {
+                        //getUsername();
+                        alert("Successful Login. Welcome to Lovely Wannabuy");
+                        window.location.href = '/Home/delivery';
+                    }
+                    else {
+                        alert("Invalid Username/Password")
+                    }
+                },
+                error: function (msg)
+                { alert(msg.responseText) }
+            })
+        }
+    </script>
+    <style>
+        a.btn {color: white; text-align: center; text-decoration: none;}
+        .btn-primary {
+            color: #fff;
+            background-color: #b81d22;
+            border-color: #b81d22;
+        }
+        .btn-primary :hover
+        {
+            color: #fff;
+            background-color: #b81d22;
+            border-color: #b81d22;
+        }
+    </style>
+<body>
+    @Html.Hidden("mac", ViewData["macAdd"])
+<nav class="navbar navbar-default" role="navigation">
+    <div class="navbar-header">
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+        </button>
+        
+    </div>
+    
+    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+       <div class="row">
+       <div class="col-md-1"></div>
+             
+       <div class="col-md-10">
+                <div class="col-md-4">
+                    <img src="~/Images/LandingPage/logo.png" />
+                </div>
+                <div class="col-md-4"></div>
+                <div class="col-md-4" style="margin-top:20px;">
+                  <div class="input-group" style="width:100%">
+                    
+                    <input type="text" class="form-control" autocomplete="off" id="txtSearch" value="Search Wannabuy Store" style="width:85%" onfocus="this.value = '';" onblur="if (this.value == '') {this.value = 'Search Wannabuy Store';}">
+                     <button class="btn btn-default" type="submit" onclick="search()"><i class="glyphicon glyphicon-search"></i></button>
+                </div>     
+               </div>
+       <div class="col-md-1"></div>
+       </div>
+       </div>
+<div class="container">
+<br>
+<div class="col-md-12" style="background-color:#b81d22;"><h4 style="text-align:center; color:#FFF; font-weight:600;">BEFORE YOU PLACE YOUR ORDER</h4></div>
+<br><br>
+<div class="col-md-6">
+<br>
+<h3>Sign In</h3>
+
+<form role="form">
+    <div class="form-group">
+    
+      <label for="email">What is your Email/Phone?</label>
+      <input type="email" class="form-control" id="nameLogin" placeholder="Enter email">
+    </div>
+    <div class="form-group">
+      <label for="pwd">Password:</label>
+      <input type="password" class="form-control" id="passLogin" placeholder="Enter password">
+    </div>
+    
+      <a class="btn btn-primary btn-lg btn-block" onclick="signIn()">Sign In</a>
+    </form>
+    <br>
+ <a href="#">Forget Password?</a><br>
+ <br>
+    @Html.ActionLink("Not a user? Sign Up", "signup", "Home")
+</div>
+<div class="col-md-6">
+<br>
+<h3 align="center">Sign In with your Social Account</h3>
+</div>
+</div>
+
+</body>
+</html>

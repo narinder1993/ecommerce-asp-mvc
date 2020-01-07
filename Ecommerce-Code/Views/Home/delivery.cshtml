@@ -1,0 +1,215 @@
+﻿@using System.Net.NetworkInformation
+@{
+    NetworkInterface[] nics = NetworkInterface.GetAllNetworkInterfaces();
+    ViewData["macAdd"] = nics[0].GetPhysicalAddress().ToString();
+    ViewBag.Title = "Delivery Details: Lovely Wannabuy";
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Delivery</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+     <link href="~/Content/style.css" rel="stylesheet" />
+    <link href="~/Content/slider.css" rel="stylesheet" />
+    <link href="~/Content/style_pop.css" rel="stylesheet" />
+<script src="~/Scripts/jquery-1.7.2.min.js"></script>
+<script type="text/javascript" src="~/Scripts/move-top.js"></script>
+<script type="text/javascript" src="~/Scripts/easing.js"></script>
+    <link href="~/Content/font-awesome.min.css" rel="stylesheet" />
+    <script src="~/Scripts/modernizr.js"></script>
+    <link href="~/Content/style_p.css" rel="stylesheet" />
+    <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+  <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+
+    <script type="text/javascript" src="js/jquery-1.10.2.min.js"></script>
+
+    <script>
+
+        function onload(username)
+        {
+            var macOb = new Object();
+            macOb.mac = document.getElementById("mac").value;
+            macOb.username = username;
+            var totalProducts;
+            var totalDue;
+            $.ajax({
+                url:'/api/orderSummary',
+                type:'POST',
+                dataType:'JSON',
+                data:macOb,
+                success: function(data)
+                {
+                    document.getElementById("totalItems").innerHTML = data[0].quantity;
+                    document.getElementById("totalDue").innerHTML = data[0].price;
+                },
+                error: function(msg)
+                {
+                    alert(msg.responseText);
+                }
+            });
+            
+        }
+        function search()//implement the search
+        {
+            var searchText = new Object();
+            searchText.txtSearch = document.getElementById("txtSearch").value;
+            $.ajax({
+                data: searchText,
+                dataType: 'json',
+                url: '/Home/search1',
+
+                type: 'POST',
+                success: function (msg) {
+                    window.location.href = '/Home/searchPage';
+                },
+
+                error: function (msg) {
+
+                    window.location.href = '/Home/searchPage';
+                }
+            });
+        }
+        function getUsername() {
+            var userOb = new Object();
+            userOb.mac_address = document.getElementById("mac").value;
+            var username1;
+            $.ajax({
+                url: '/api/getUsername',
+                dataType: 'JSON',
+                data: userOb,
+                type: 'POST',
+                success: function (data) {
+
+                    if (data.length == 0) {
+                        document.getElementById("username").innerHTML = "Guest User";
+                        username1 = "Guest User";
+                        
+                    }
+                    else {
+                        document.getElementById("username").innerHTML = data;
+                        username1 = data;
+                        
+
+                    }
+                    onload(username1);
+                }
+            })
+            
+        }
+    </script>
+    <style>
+	
+a.btn {color: white; text-align: center; text-decoration: none;}
+        .btn-primary {
+            color: #fff;
+            background-color: #b81d22;
+            border-color: #b81d22;
+        }
+        .btn-primary :hover
+        {
+            color: #fff;
+            background-color: #b81d22;
+            border-color: #b81d22;
+        }
+		table {
+    table-layout: fixed;
+    word-wrap: break-word;
+	font-size:20px;
+	margin-top:20px;
+}
+a:hover
+{
+	text-decoration:none;}
+	</style>
+</head>
+<body onload="getUsername()">
+    @Html.Hidden("mac", ViewData["macAdd"])
+    
+<div class="container">
+<nav class="navbar navbar-default" role="navigation">
+    <div class="navbar-header">
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+        </button>
+        
+    </div>
+    
+    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+       <div class="row">
+       <div class="col-md-1"></div>
+             
+       <div class="col-md-10">
+                <div class="col-md-4" style="margin-left:-100px">
+                <img src="~/Images/LandingPage/logo.png" />  
+                </div>
+                <div class="col-md-4"></div>
+                <div class="col-md-4" style="margin-top:20px;">
+                <div class="input-group" style="width:100%">
+                    
+                    <input type="text" class="form-control" autocomplete="off" id="txtSearch" value="Search Wannabuy Store" style="width:85%" onfocus="this.value = '';" onblur="if (this.value == '') {this.value = 'Search Wannabuy Store';}">
+                     <button class="btn btn-default" type="submit" onclick="search()"><i class="glyphicon glyphicon-search"></i></button>
+                </div>   
+               </div>
+       <div class="col-md-1"></div>
+       </div>
+       </div>
+<br>
+<div class="col-md-12" style="background-color:#b81d22;"><h4 style="text-align:center; color:#FFF; font-weight:600;">CHOOSE A DELIVERY OPTION</h4></div>
+<div class="col-md-12">
+<p style="font-size:24px;">Order Summary for <span id="username"></span></p>
+</div>
+<div class="col-md-12">
+<table class="table table-striped">
+<thead>
+         <th>Total Number of items in your cart: (<span id="totalItems"></span>)</th>
+         <th style="float:right;">Subtotal: Rs <span id="totalDue"></span></th>
+      </tr>
+   </thead>
+</table>
+</div>
+
+
+<br><br>
+<div class="col-md-12">
+<p style="font-size:24px; margin-top:20px;">Delivery Options</p>
+</div>
+
+<div class="col-md-12">
+<div class="col-md-3"></div>
+<div class="col-md-6">
+    @Html.ActionLink("Pick Up from our store", "pickUp", "Home", null, new { @class="btn btn-primary btn-lg btn-block"})
+
+</div>
+<div class="col-md-3"></div>
+</div>
+
+<div class="col-md-12">
+<div class="col-md-3"></div>
+<div class="col-md-6">
+<p style="text-align:center; margin-top:20px; font-weight:bold; font-size:20px;">OR</p>
+</div>
+<div class="col-md-3"></div>
+</div>
+
+<div class="col-md-12">
+<div class="col-md-3"></div>
+<div class="col-md-6">
+     @Html.ActionLink("Delivery at doorsteps", "homedel", "Home", null, new { @class="btn btn-primary btn-lg btn-block"})
+<div class="col-md-3"></div>
+</div>
+    <br /><br /><br /><br /><br />
+    <br /><br /><br /><br /><br />
+
+
+</div>
+
+</body>
+</html>

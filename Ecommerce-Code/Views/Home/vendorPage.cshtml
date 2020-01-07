@@ -1,0 +1,28 @@
+﻿@{
+    ViewBag.Title = "Welcome Vendor: Lovely Wannabuy";
+}
+<html>
+    <script>
+        function load()
+        {
+            var vendor = new Object();
+            vendor.email = document.getElementById("email").value;
+            vendor.password = document.getElementById("password").value;
+            $.ajax({
+                url: '/api/vendorInfo',
+                data: vendor,
+                dataType: 'JSON',
+                type: 'POST',
+                success: function (data)
+                {
+                    document.getElementById("name").innerHtml = data.name;
+                }
+            })
+        }
+    </script>
+    <body onload="load">
+        @Html.Hidden("email", ViewData["email"])
+        @Html.Hidden("password", ViewData["password"])
+        <div id="name"></div>
+    </body>
+</html>

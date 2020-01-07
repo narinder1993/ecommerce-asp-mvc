@@ -1,0 +1,269 @@
+﻿@using System.Net.NetworkInformation
+@{
+    NetworkInterface[] nics = NetworkInterface.GetAllNetworkInterfaces();
+    ViewData["macAdd"] = nics[0].GetPhysicalAddress().ToString();
+
+    ViewBag.Title = "Home Delivery: Lovely Wannabuy";
+}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Delivery</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+     <link href="~/Content/style.css" rel="stylesheet" />
+    <link href="~/Content/slider.css" rel="stylesheet" />
+    <link href="~/Content/style_pop.css" rel="stylesheet" />
+<script src="~/Scripts/jquery-1.7.2.min.js"></script>
+<script type="text/javascript" src="~/Scripts/move-top.js"></script>
+<script type="text/javascript" src="~/Scripts/easing.js"></script>
+    <link href="~/Content/font-awesome.min.css" rel="stylesheet" />
+    <script src="~/Scripts/modernizr.js"></script>
+    <link href="~/Content/style_p.css" rel="stylesheet" />
+    <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+  <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+
+    <script type="text/javascript" src="js/jquery-1.10.2.min.js"></script>
+    <style>
+	
+		table {
+    table-layout: fixed;
+    word-wrap: break-word;
+	font-size:20px;
+	margin-top:20px;
+}
+	</style>
+    <script>
+        var username1;
+
+        function getUsername() {
+            var userOb = new Object();
+            userOb.mac_address = document.getElementById("mac").value;
+            $.ajax({
+                url: '/api/getUsername',
+                dataType: 'JSON',
+                data: userOb,
+                type: 'POST',
+                success: function (data) {
+
+                    if (data.length == 0) {
+                        document.getElementById("username").value = "Guest User";
+                        username1 = "Guest User";
+                       // sideCart(username1);
+                    }
+                    else {
+                        document.getElementById("username").value = data;
+                       username1 = data;
+                       // sideCart(username1);
+
+                    } getdetails(username1);
+                }
+            })
+            
+        }
+        function getdetails(username2)
+        {
+            var userOb = new Object();
+            userOb.mac_address = document.getElementById("mac").value;
+            userOb.username = username2;
+            $.ajax({
+                url: '/api/profile',
+                data: userOb,
+                dataType: 'JSON',
+                type: 'POST',
+                success: function (data)
+                {
+                    document.getElementById("email").value = data.email_phone;
+                    document.getElementById("pincode").value=data.pincode;
+                    document.getElementById("address").value=data.address;
+                    document.getElementById("city").value=data.city;
+                    document.getElementById("state").value=data.state;
+                    document.getElementById("mobile").value=data.mobile;
+                },
+                error: function (msg)
+                {
+                    alert(msg.responseText);
+                }
+            });
+        }
+        function search()//implement the search
+        {
+            var searchText = new Object();
+            searchText.txtSearch = document.getElementById("txtSearch").value;
+            $.ajax({
+                data: searchText,
+                dataType: 'json',
+                url: '/Home/search1',
+
+                type: 'POST',
+                success: function (msg) {
+                    window.location.href = '/Home/searchPage';
+                },
+
+                error: function (msg) {
+
+                    window.location.href = '/Home/searchPage';
+                }
+            });
+        }
+        function editProfile() {
+            var userOb = new Object();
+            userOb.username = document.getElementById("username").value;
+            userOb.mac_address = document.getElementById("mac").value;
+            userOb.mobile = document.getElementById("mobile").value;
+            userOb.email_phone = document.getElementById("email").value;
+            userOb.address = document.getElementById("address").value;
+            userOb.state = document.getElementById("state").value;
+            userOb.city = document.getElementById("city").value;
+            userOb.pincode = document.getElementById("pincode").value;
+
+            $.ajax({
+                url: '/api/editProfile',
+                data: userOb,
+                dataType: 'JSON',
+                type: 'POST',
+                success: function (data) {
+                    if (data != 0) {
+                       // alert("Details updated successfully.");
+                       // window.location.href = '/Home/editProfile';
+                    }
+                    else
+                        alert("Please check your details again");
+                },
+                error: function (msg) {
+                    alert(msg.responseText);
+                }
+            })
+        }
+        function payment()
+        {
+
+            var userOb = new Object();
+            userOb.mac = document.getElementById("mac").value;
+            userOb.username = document.getElementById("username").value;
+            userOb.email = document.getElementById("email").value;
+            userOb.address = document.getElementById("address").value;
+            userOb.city = document.getElementById("city").value;
+            userOb.state = document.getElementById("state").value;
+            userOb.mobile = document.getElementById("mobile").value;
+            userOb.pincode = document.getElementById("pincode").value;
+            $.ajax({
+                url: '/Home/HomeDelivery',
+                data: userOb,
+                dataType: 'JSON',
+                type: 'POST',
+                success: function (data)
+                {
+                    
+                    window.location.href = '/Home/Payment';
+                },
+                error: function (msg)
+                {
+                    window.location.href = '/Home/Payment';
+                }
+            })
+
+
+
+        }
+    </script>
+</head>
+<body onload="getUsername();">
+    @Html.Hidden("mac", ViewData["macAdd"])
+<nav class="navbar navbar-default" role="navigation">
+    <div class="navbar-header">
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+        </button>
+        
+    </div>
+    
+    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+       <div class="row">
+       <div class="col-md-1"></div>
+             
+       <div class="col-md-10">
+                <div class="col-md-4">
+                <img src="~/Images/LandingPage/logo.png" />  
+                </div>
+                <div class="col-md-4"></div>
+                <div class="col-md-4" style="margin-top:20px;">
+               <div class="input-group" style="width:100%">
+                    
+                    <input type="text" class="form-control" autocomplete="off" id="txtSearch" value="Search Wannabuy Store" style="width:85%" onfocus="this.value = '';" onblur="if (this.value == '') {this.value = 'Search Wannabuy Store';}">
+                     <button class="btn btn-default" type="submit" onclick="search()"><i class="glyphicon glyphicon-search"></i></button>
+                </div>    
+               </div>
+       <div class="col-md-1"></div>
+       </div>
+       </div>
+<div class="container">
+<br>
+<div class="col-md-12" style="background-color:#b81d22;"><h4 style="text-align:center; color:#FFF; font-weight:600;">Enter your Delivery Details</h4></div>
+
+<div class="col-md-2"></div>
+<div class="col-md-8">
+	<form role="form" >
+    <div class="form-group" style="margin-top:15px;">
+    <label for="name">Name:</label>
+      <input type="text" class="form-control"  id="username" placeholder="Enter your Name"><br>
+      <label for="name">Email:</label>
+      <input type="text" class="form-control"  id="email" placeholder="Enter your Email Id"><br>
+    
+        <label for="pincode">Pincode:</label>
+      <input type="text" class="form-control" id="pincode" placeholder="Enter pincode"><br>
+      <label for="address">Address:</label>
+      <textarea class="form-control" rows="5" id="address" placeholder="Enter your Address"></textarea><br>
+      <label for="city">City:</label>
+      <input type="text" class="form-control" id="city" placeholder="Enter your city name"><br>
+      <label for="state">State:</label>
+      <select class="form-control" id="state">
+        <option>Select your State</option>
+        <option>Andaman and Nicobar</option>
+        <option>Andhra Pradesh</option>
+        <option>Arunachal Pradesh</option>
+        <option>Assam</option>
+        <option>Bihar</option>
+        <option>Chandigarh</option>
+        <option>Chhattisgarh</option>
+        <option>Goa</option>
+        <option>Gujarat</option>
+        <option>Haryana</option>
+        <option>Himachal Pradesh</option>
+        <option>Jammu and Kashmir</option>
+        <option>Jharkhand</option>
+        <option>Karnataka</option>
+        <option>Kerala</option>
+        <option>Madya Pradesh</option>
+        <option>Maharashtra</option>
+        <option>Manipur</option>
+        <option>Meghalaya</option>
+        <option>Mizoram</option>
+        <option>Nagaland</option>
+        <option>Orissa</option>
+        <option>Punjab</option>
+        <option>Rajasthan</option>
+        <option>Sikkim</option>
+        <option>Tamil Nadu</option>
+        <option>Tripura</option>
+        <option>Uttaranchal</option>
+        <option>Uttar Pradesh</option>
+        <option>West Bengal</option>
+        </select><br>
+        <label for="country">Country:</label>
+        <input type="text" class="form-control" id="country" value="India (Service available only in India)" disabled><br>
+        <label for="contact">Contact:</label>
+        <input type="text" class="form-control" id="mobile" placeholder="Enter your Contact Number"><br>
+        <button type="button" onclick="payment()" class="btn btn-primary btn-lg btn-block" style="background-color:#b81d22;">Proceed to Payment</button>
+    </div>
+</div>
+<div class="col-md-2"></div>
+</body>
+</html>
